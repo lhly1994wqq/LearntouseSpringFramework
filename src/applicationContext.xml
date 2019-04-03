@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+   http://www.springframework.org/schema/aop
+   http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+   http://www.springframework.org/schema/context
+   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="pojo"/>
+    <!--<context:component-scan base-package="aspect"/>-->
+    <!--<context:component-scan base-package="service"/>-->
+    <!--<aop:aspectj-autoproxy/>-->
+
+     <!--Bean-->
+    <bean name="book" class="pojo.Book"  >
+        <property name="name" value="lala"></property>
+        <property name="id" value="12"></property>
+    </bean>
+
+    <!--<bean name="user" class="pojo.User" lazy-init="true">-->
+        <!--<property name="name" value="user1"></property>-->
+        <!--<property name="age" value="12"></property>-->
+    <!--</bean>-->
+
+    <!--Dao-->
+    <bean name="bookdao" class="DAO.BookDaoImpl"></bean>
+    <bean name="userdao" class="DAO.UserDaoImpl"></bean>
+
+    <!-- Service -->
+    <bean id="productServiceId" class="service.ProductServiceImpl"></bean>
+
+    <bean id="userService" class="service.UserServiceImpl">
+        <property name="userDao" ref="userdao"></property>
+    </bean>
+
+    <bean id="bookService" class="service.BookServiceImpl">
+        <property name="bookDao" ref="bookdao"></property>
+    </bean>
+
+
+
+    <!-- Aspect -->
+    <bean id="loggerAspectId" class="aspect.LoggerAspect"></bean>
+    <bean id="myAspectId" class="aspect.MyAspect"></bean>
+    <bean id="bookAspectId" class="aspect.BookAspect"/>
+    
+    
+   <!-- proxy -->
+    <!--<bean id="proxyServiceId" class="org.springframework.aop.framework.ProxyFactoryBean">-->
+        <!--<property name="interfaces" value="service.ProductService"></property>-->
+        <!--<property name="target" ref="productServiceId"></property>-->
+        <!--<property name="interceptorNames" value="loggerAspectId"></property>-->
+    <!--</bean>-->
+
+    <!-- aop -->
+    <aop:config proxy-target-class="true">
+        <aop:pointcut id="myPointCut" expression="execution(* service.UserServiceImpl.*(..))"/>
+        <aop:advisor advice-ref="myAspectId" pointcut-ref="myPointCut"/>
+    </aop:config>
+
+    <aop:config proxy-target-class="true">
+        <aop:pointcut id="bookPointCut" expression="execution(* service.BookServiceImpl.*(..))"/>
+        <aop:advisor advice-ref="bookAspectId" pointcut-ref="bookPointCut"/>
+    </aop:config>
+
+    <!--<aop:config>-->
+        <!--<aop:pointcut id="productPointCut" expression="execution(* service.ProductServiceImpl.*(..))"/>-->
+        <!--<aop:advisor advice-ref="loggerAspectId" pointcut-ref="productPointCut"/>-->
+    <!--</aop:config>-->
+
+    <aop:config>
+        <aop:pointcut id="loggerCutpoint"
+                      expression="execution(* service.ProductService.*(..))"/>
+        <aop:aspect id="logAspect" ref="loggerAspectId">
+            <aop:around pointcut-ref="loggerCutpoint" method="log"/>
+        </aop:aspect>
+    </aop:config>
+
+</beans>
